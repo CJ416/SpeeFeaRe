@@ -4,7 +4,7 @@
 
 [SoundStream](https://arxiv.org/pdf/2107.03312) was proposed in 2021, it pioneered the neural audio codec, and most subsequent work has followed the **encoder-quantizer-decoder** network architecture. A single model can operate across variable bitrates from **3 kbps to 18 kbps**, with a negligible quality loss when compared with models trained at fixed bitrates.
 
-![](./assets/pics/soundstream.png 'SoundStream Architecture')
+![](./pics/soundstream.png 'SoundStream Architecture')
 
 ### 2. Core Components
 
@@ -17,9 +17,11 @@ Soundstream is a fully convolution-based AutoEncoder with fixed codebook quantiz
 * When a codebook vector has not been assigned any input frame for several batches, we replace it with an input frame randomly sampled within the current
   batch
 
+
+
 #### 2.1 Encoder and Decoder
 
-![](./assets/pics/ss-arch.png)
+![](/Users/jaykeecao/Documents/code/SpeeFeaRe/assets/pics/ss-arch.png)
 
 #### 2.2 K-Means Codebook Initialization
 
@@ -54,7 +56,7 @@ def kmeans_init_codebook(self, data):
             indices = torch.randint(0, N, (self.codebook_size,))
             data = torch.cat([data, data[indices]], dim=0)
             N = data.shape[0]
-
+        
         # 1. Randomly select initial centroids
         indices = torch.randperm(N)[:self.codebook_size]
         centroids = data[indices].clone()
@@ -71,19 +73,21 @@ def kmeans_init_codebook(self, data):
                 else:
                     random_idx = torch.randint(0, N, (1,))
                     new_centroids[k] = data[random_idx]
-
+            
             diff = (new_centroids - centroids).pow(2).sum()
             centroids = new_centroids
 
             if iteration % 10 == 0:
                 print(f'K-means init iteration {iteration}/{self.kmeans_iters}, diff: {diff:.6f}')
-
+            
             if diff < 1e-6:
                 print(f' K-means converged at {iteration}')
                 break
         self.codebook.weight.data.copy_(centroids)
         self.initted.data.copy_(torch.tensor([True]))
 ```
+
+
 
 ## DAC (Descript-inc)
 
@@ -97,11 +101,13 @@ $$
 
 Snake function is more suitable for periodic signals.
 
-![](./assets/pics/snake%20activation.png)
+![](/Users/jaykeecao/Documents/code/SpeeFeaRe/assets/pics/snake%20activation.png)
 
 **Sanke function key properties analysis**
 
-****![](./assets/pics/snake_properties.png)
+****![](/Users/jaykeecao/Documents/code/SpeeFeaRe/assets/pics/snake_properties.png)
+
+
 
 ### 2. Comparison---DAC vs. SoundStream
 
@@ -130,3 +136,5 @@ There are also some useful traits mentioned in DAC to improve codebook usage.
   * > Apply quantizer dropout to each input example with some probability p.
 
 Besides, DAC codec designs more complicated discriminators for more high-fidelity reconstruction.
+
+
