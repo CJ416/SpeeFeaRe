@@ -6,7 +6,7 @@
 
 [SoundStream](https://arxiv.org/pdf/2107.03312) was proposed in 2021, it pioneered the neural audio codec, and most subsequent work has followed the **encoder-quantizer-decoder** network architecture. A single model can operate across variable bitrates from **3 kbps to 18 kbps**, with a negligible quality loss when compared with models trained at fixed bitrates.
 
-![](./assets/pics/soundstream.png 'SoundStream Architecture')
+![](./pics/soundstream.png 'SoundStream Architecture')
 
 ### 2. Core Components
 
@@ -21,7 +21,7 @@ Soundstream is a fully convolution-based AutoEncoder with fixed codebook quantiz
 
 #### 2.1 Encoder and Decoder
 
-![](./assets/pics/ss-arch.png)
+![](./pics/ss-arch.png)
 
 #### 2.2 K-Means Codebook Initialization
 
@@ -89,7 +89,7 @@ def kmeans_init_codebook(self, data):
 
 ## Encodec(Meta---2022)
 
-![](./assets/pics/encodec.png)
+![](./pics/encodec.png)
 
 > Streaming encoder-decoder architecture with quantized latent space.
 
@@ -115,11 +115,11 @@ $$
 
 Snake function is more suitable for periodic signals.
 
-![](./assets/pics/snake%20activation.png)
+![](./pics/snake%20activation.png)
 
 **Sanke function key properties analysis**
 
-****![](./assets/pics/snake_properties.png)
+****![](./pics/snake_properties.png)
 
 ### 2. Comparison---DAC vs. SoundStream
 
