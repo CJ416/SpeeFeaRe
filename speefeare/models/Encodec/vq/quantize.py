@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from einops import rearrange
 from torch.nn.utils import weight_norm
 
-from speefeare.models.DAC.vq.layers import WNConv1d
+from speefeare.models.Encodec.vq.layers import SConv1d
 
 class VectorQuantizer(nn.Module):
     '''
@@ -28,8 +28,8 @@ class VectorQuantizer(nn.Module):
         self.codebook_size = codebook_size
         self.codebook_dim = codebook_dim
 
-        self.in_proj = WNConv1d(input_dim, codebook_dim, kernel_size=1)
-        self.out_proj = WNConv1d(codebook_dim, input_dim, kernel_size=1)
+        self.in_proj = SConv1d(input_dim, codebook_dim, kernel_size=1)
+        self.out_proj = SConv1d(codebook_dim, input_dim, kernel_size=1)
         self.codebook = nn.Embedding(codebook_size, codebook_dim)
 
         self.init = False
@@ -258,6 +258,7 @@ class ResidualVectorQuantize(nn.Module):
 
 
 if __name__ == "__main__":
+    import pdb; pdb.set_trace()
     rvq = ResidualVectorQuantize(quantizer_dropout=0.3)
     x = torch.randn(16, 512, 80)
     y = rvq(x)

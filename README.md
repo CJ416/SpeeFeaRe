@@ -1,132 +1,79 @@
-## Pioneer work --- SoundStream (Google)
+# SpeeFeaRe: Speech Feature Representation
 
-### 1. Overview
+<img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg">
 
-[SoundStream](https://arxiv.org/pdf/2107.03312) was proposed in 2021, it pioneered the neural audio codec, and most subsequent work has followed the **encoder-quantizer-decoder** network architecture. A single model can operate across variable bitrates from **3 kbps to 18 kbps**, with a negligible quality loss when compared with models trained at fixed bitrates.
+<img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
 
-![](./assets/pics/soundstream.png 'SoundStream Architecture')
+English | 中文
 
-### 2. Core Components
+---
 
-Soundstream is a fully convolution-based AutoEncoder with fixed codebook quantizer. There were several notable tricks. 
+<a name="english"></a>
 
-* To support streamable inference, it adopted causal padding and causal convolution. 
+## 🇬🇧 English Version
 
-* To improve the codebook usage, it adopt K-means on the first batch.
+**SpeeFeaRe** (Speech Feature Representation) is a repository dedicated to tracking, analyzing, and reproducing cutting-edge methods in speech representation learning.
 
-* When a codebook vector has not been assigned any input frame for several batches, we replace it with an input frame randomly sampled within the current
-  batch
+This repository aims to map the evolutionary trajectory from Neural Audio Codecs to next-generation joint semantic-acoustic representations, with a special focus on **LLM-based TTS**, **Omni-models**, and **Autoregressive (AR) generation** scenarios.
 
-#### 2.1 Encoder and Decoder
+### 📖 Motivation
 
-![](./assets/pics/ss-arch.png)
+With the advent of Omni-models like GPT-4o, speech is no longer just an object of signal processing but has become a "First-class Citizen" for Large Language Models (LLMs). To enable LLMs to understand and generate speech as fluently as text, we need efficient **Speech Representations**.
 
-#### 2.2 K-Means Codebook Initialization
+Current speech representation research is undergoing a paradigm shift from "high-fidelity reconstruction" to "semantic disentanglement and fusion." This repository documents this exciting technological evolution.
 
-**Benefit**
+### 🗺️ Evolution Roadmap
 
-> Although the initial embeddings of a random encoder are noisier, and the cluster centers obtained by K-means are also biased towards randomness, this initialization is still useful: 
+We categorize the development of speech representations into the following key stages:
+
+#### 1. The Rise of Discrete Representations: Reconstruction & Compression
+
+Early Neural Audio Codecs aimed to discretize continuous audio into tokens for autoregressive modeling by LLMs.
+
+- **Key Tech**: Residual Vector Quantization (RVQ), GAN Discriminators.
+- **Representative Works**:
+  - **SoundStream**: The pioneer of reconstruction-based RVQ, laying the foundation for modern codecs.
+  - **EnCodec**: Introduced Transformers and streaming processing, further improving compression rates and quality.
+  - **DAC**: Fully convolution-based encoder-quantizer-decoder architecture, GAN training paradigm with improved tricks, including L2 normalize, factorized codes and diverse discriminators.
+
+#### 2. Semantic Enhancement: Distillation & Disentanglement
+
+Purely acoustic reconstruction tokens lack semantic information, leading to content inaccuracies in LLM speech generation. Researchers began injecting semantic information from Self-Supervised Learning (SSL) models (e.g., HuBERT/W2V-BERT) into codecs.
+
+- **Key Tech**: Semantic Distillation, Mutual Information Disentanglement.
+- **Representative Works**:
+  - **SpeechTokenizer**: Attempts to disentangle semantic and acoustic tokens via HuBERT distillation.
+  - **MiMicodec**: Further optimizes semantic-acoustic alignment.
+  - **Xcodec**: Large-scale semantic distillation at the architectural level to enhance token language understanding.
+  - **WavTokenizer**: Extreme compression rates with SOTA reconstruction quality.
+
+#### 3. The Paradigm Shift: Discrete vs. Continuous
+
+While discretization (Quantization) fits the Cross-Entropy Loss of LLMs, it inevitably leads to **information loss** (especially in prosody and emotion). Consequently, continuous features are regaining attention.
+
+> **💡 Deep Dive: Challenges of Continuous Feature Modeling in AR** Continuous features (like Mel-spectrograms or Latent vectors) are typically used in Non-AR or Diffusion (DiT) architectures. Modeling them directly in Autoregressive (AR) architectures faces significant challenges:
 > 
-> * it breaks the isotropic symmetry of the codebook (avoiding all codewords starting with the same initial values), reducing the problem of "dead codewords" or all samples mapping to the same few codewords in the early stages of training, thus making training more stable and converging faster.
-> 
-> * Initializing with a large amount of real input (rather than a single small batch) allows the clustering to reflect the data distribution, resulting in significantly better performance.
+> 1. **Error Accumulation**: In AR generation, $x_t$ depends on $x_{t-1}$. Discrete tokens can "reset" errors via codebook lookup, whereas minute prediction errors in continuous features amplify exponentially over sequence length, leading to generation collapse.
+> 2. **Variance Collapse / Over-smoothing**: Traditional regression losses (like MSE) tend to predict the mean of the distribution. Due to the high variance of speech data, models tend to output "averaged," smooth trajectories, resulting in muffled speech lacking detail and high-frequency information.
+> 3. **Difficulty in Density Estimation**: The discrete space is finite (Softmax), while the continuous space is infinite. Accurately modeling complex multi-modal distributions in an AR framework is notoriously difficult.
 
-**Limitations**
+#### 4. Next-Gen Frontiers: Continuous Autoregressive Modeling
 
->  If only a very small or unrepresentative batch is used, the initialization will be poor and may even interfere with training.
+To combine the contextual capabilities of AR with the high fidelity of continuous features, recent works are exploring new paths, combining Diffusion Loss or Flow Matching to address the challenges above.
 
->  Using a **pre-trained encoder** (or performing K-means first using traditional audio features such as log-mel) will yield better results.
+- **Representative Works**:
+  - **VoxCPM**: Exploring continuous features in language modeling.
+  - **DiTAR**: Diffusion for Autoregressive generation.
+  - **CosyVoice**: Combining the strengths of discrete and continuous representations for high-quality zero-shot generation.
 
-```python
-def kmeans_init_codebook(self, data):
-        '''
-        K-means initialization of the codebook embeddings
+### 📚 Paper List & Analysis
 
-        Args:
-        -----
-            data: Tensor[N, D]
-                Data to use for k-means initialization
-        '''
-        if self.initted:
-            return 
-        N = data.shape[0]
-        if N < self.codebook_size:
-            indices = torch.randint(0, N, (self.codebook_size,))
-            data = torch.cat([data, data[indices]], dim=0)
-            N = data.shape[0]
+*(Note: Links point to detailed analysis documents within the repo)*
 
-        # 1. Randomly select initial centroids
-        indices = torch.randperm(N)[:self.codebook_size]
-        centroids = data[indices].clone()
-
-        for iteration in range(self.kmeans_iters):
-            distance = torch.cdist(data, centroids)     # N, K
-            assignments = distance.argmin(dim=1)        # N
-
-            new_centroids = centroids.clone()
-            for k in range(self.codebook_size):
-                mask = assignments == k                 # data points assigned to cluster k
-                if mask.sum() > 0:
-                    new_centroids[k] = data[mask].mean(dim=0)
-                else:
-                    random_idx = torch.randint(0, N, (1,))
-                    new_centroids[k] = data[random_idx]
-
-            diff = (new_centroids - centroids).pow(2).sum()
-            centroids = new_centroids
-
-            if iteration % 10 == 0:
-                print(f'K-means init iteration {iteration}/{self.kmeans_iters}, diff: {diff:.6f}')
-
-            if diff < 1e-6:
-                print(f' K-means converged at {iteration}')
-                break
-        self.codebook.weight.data.copy_(centroids)
-        self.initted.data.copy_(torch.tensor([True]))
-```
-
-## DAC (Descript-inc)
-
->  The DAC largely inherits the architectural ideas of SoundStream, and has made improvements based on the architecture.
-
-### 1. [Periodic activation function](https://arxiv.org/abs/2006.08195)
-
-$$
-\text{Snake}_a:=x+\frac{1}{\alpha}\sin^2(\alpha x)
-$$
-
-Snake function is more suitable for periodic signals.
-
-![](./assets/pics/snake%20activation.png)
-
-**Sanke function key properties analysis**
-
-****![](./assets/pics/snake_properties.png)
-
-### 2. Comparison---DAC vs. SoundStream
-
-|                   | SoundStream (2021)  | DAC (2023)                 |
-| ----------------- | ------------------- | -------------------------- |
-| **Activation**    | ELU/ReLU            | **Snake1d**                |
-| **RVQ**           | Fixed codebook size | **dropout**                |
-| **Discriminator** | Multiscale          | **MultiPeriod+MultiScale** |
-
-[DAC---High-Fidelity Audio Compression with Imroved RVQGAN](https://arxiv.org/pdf/2306.06546)
-
-There are also some useful traits mentioned in DAC to improve codebook usage.
-
-* **Factorized codes**
-  
-  * Project input dim into codebook dim, reduce the vector dimension
-  
-  * >  Factorization decouples code lookup and code embedding, by performing code lookup in a low-dimensional space (8d or 32d) whereas the code embedding resides in a high dimensional space (1024d). Intuitively, this can be interpreted as a code lookup using only the principal components of the input vector that maximally explain the variance in the data.
-
-* **L2-normalization**
-  
-  * > ****The L2-normalization of the encoded and codebook vectors converts euclidean distance to cosine similarity, which is helpful for stability and quality
-
-* **Quantizer dropout**
-  
-  * > Apply quantizer dropout to each input example with some probability p.
-
-Besides, DAC codec designs more complicated discriminators for more high-fidelity reconstruction.
+| Category            | Paper               | Key Idea                                 | Code/Analysis                   |
+| ------------------- | ------------------- | ---------------------------------------- | ------------------------------- |
+| **Pioneer**         | **SoundStream**     | End-to-end neural audio codec with RVQ   | [Analysis](./assets/pioneer.md) |
+| **Pioneer**         | **EnCodec**         | High fidelity neural audio compression   | [Analysis](./assets/semantic.md) |
+| **Semantic Fusion** | **SpeechTokenizer** | Unified speech tokenizer for speech LLMs | Analysis                        |
+| **Semantic Fusion** | **Mimi**            | Split RVQ with Semantic Distillation     | Analysis                        |
+| **Semantic Fusion** | **Xcodec**          | Large-scale semantic distillation        | Analysis                        |
