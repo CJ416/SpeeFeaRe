@@ -89,7 +89,7 @@ def kmeans_init_codebook(self, data):
 
 ## Encodec(Meta---2022)
 
-![](/Users/jaykeecao/Documents/code/SpeeFeaRe/assets/pics/encodec.png)
+![](./assets/pics/encodec.png)
 
 > Streaming encoder-decoder architecture with quantized latent space.
 
