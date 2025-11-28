@@ -182,7 +182,7 @@ Mimi proposed **split quantizers**, holding the opinion that though distillation
 
 Xcodec also fuses semantic information into the codebooks. The architecture of Xcodec is listed below:
 
-![](/Users/jaykeecao/Documents/code/SpeeFeaRe/assets/pics/xcodec-archi.png)
+![](../assets/pics/xcodec-archi.png)
 
 * Mimi divides quantizers into 2 types: semantic quantizer and acoustic quantizer
   
@@ -200,7 +200,7 @@ Xcodec also fuses semantic information into the codebooks. The architecture of X
 
 The brief information flow diagram may explain this:
 
-![](/Users/jaykeecao/Documents/code/SpeeFeaRe/assets/pics/xcodec-distill.png)
+![](../assets/pics/xcodec-distill.png)
 
 * Distill-based methods like speechtokenzier, integrated semantic feature before quantized embedding addition  operation
 

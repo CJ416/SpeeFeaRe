@@ -73,7 +73,7 @@ To combine the contextual capabilities of AR with the high fidelity of continuou
 | Category            | Paper               | Key Idea                                 | Code/Analysis                   |
 | ------------------- | ------------------- | ---------------------------------------- | ------------------------------- |
 | **Pioneer**         | **SoundStream**     | End-to-end neural audio codec with RVQ   | [Analysis](./assets/pioneer.md) |
-| **Pioneer**         | **EnCodec**         | High fidelity neural audio compression   | [Analysis](./assets/semantic.md) |
-| **Semantic Fusion** | **SpeechTokenizer** | Unified speech tokenizer for speech LLMs | Analysis                        |
-| **Semantic Fusion** | **Mimi**            | Split RVQ with Semantic Distillation     | Analysis                        |
-| **Semantic Fusion** | **Xcodec**          | Large-scale semantic distillation        | Analysis                        |
+| **Pioneer**         | **EnCodec**         | High fidelity neural audio compression   |   |
+| **Semantic Fusion** | **SpeechTokenizer** | Unified speech tokenizer for speech LLMs | [Analysis](./assets/semantic.md)                        |
+| **Semantic Fusion** | **Mimi**            | Split RVQ with Semantic Distillation     |                       |
+| **Semantic Fusion** | **Xcodec**          | Large-scale semantic distillation        |                        |
