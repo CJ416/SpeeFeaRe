@@ -1,5 +1,7 @@
 # SpeeFeaRe: Speech Feature Representation
 
+<img alt="Awesome" src="https://awesome.re/badge.svg">
+
 <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg">
 
 <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
@@ -15,15 +17,6 @@ English | 中文
 **SpeeFeaRe** (Speech Feature Representation) is a repository dedicated to tracking, analyzing, and reproducing cutting-edge methods in speech representation learning.
 
 This repository aims to map the evolutionary trajectory from Neural Audio Codecs to next-generation joint semantic-acoustic representations, with a special focus on **LLM-based TTS**, **Omni-models**, and **Autoregressive (AR) generation** scenarios.
-
-```shell
-SpeeFeaRe
-├── 
-```
-
-
-
-
 
 ### 📖 Motivation
 
@@ -43,7 +36,6 @@ Early Neural Audio Codecs aimed to discretize continuous audio into tokens for a
 - **Representative Works**:
   - **SoundStream**: The pioneer of reconstruction-based RVQ, laying the foundation for modern codecs.
   - **EnCodec**: Introduced Transformers and streaming processing, further improving compression rates and quality.
-  - **DAC**: Fully convolution-based encoder-quantizer-decoder architecture, GAN training paradigm with improved tricks, including L2 normalize, factorized codes and diverse discriminators.
 
 #### 2. Semantic Enhancement: Distillation & Disentanglement
 
@@ -79,10 +71,13 @@ To combine the contextual capabilities of AR with the high fidelity of continuou
 
 *(Note: Links point to detailed analysis documents within the repo)*
 
-| Category            | Paper               | Key Idea                                 | Code/Analysis                    |
-| ------------------- | ------------------- | ---------------------------------------- | -------------------------------- |
-| **Pioneer**         | **SoundStream**     | End-to-end neural audio codec with RVQ   | [Analysis](./assets/pioneer.md)  |
-| **Pioneer**         | **EnCodec**         | High fidelity neural audio compression   |                                  |
-| **Semantic Fusion** | **SpeechTokenizer** | Unified speech tokenizer for speech LLMs | [Analysis](./assets/semantic.md) |
-| **Semantic Fusion** | **Mimi**            | Split RVQ with Semantic Distillation     |                                  |
-| **Semantic Fusion** | **Xcodec**          | Large-scale semantic distillation        |                                  |
+| Category       | Paper               | Key Idea                                  | Code/Analysis |
+| -------------- | ------------------- | ----------------------------------------- | ------------- |
+| **Pioneer**    | **SoundStream**     | End-to-end neural audio codec with RVQ    | Analysis      |
+| **Pioneer**    | **EnCodec**         | High fidelity neural audio compression    | Analysis      |
+| **Semantic**   | **SpeechTokenizer** | Unified speech tokenizer for speech LLMs  | Analysis      |
+| **Semantic**   | **WavTokenizer**    | Extreme compression & SOTA reconstruction | Analysis      |
+| **Semantic**   | **Xcodec**          | Large-scale semantic distillation         | Analysis      |
+| **Continuous** | **VoxCPM**          | Continuous prediction modeling            | Analysis      |
+| **Continuous** | **DiTAR**           | Diffusion for Autoregressive generation   | Analysis      |
+| **Hybrid**     | **CosyVoice**       | Instruct-following & Zero-shot TTS        | Analysis      |

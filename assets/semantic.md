@@ -45,10 +45,6 @@ Besides, the authors experimented on the Voice Conversion Task w/wo the first RV
 > - **Hierarchical Disentanglement:** It enforces the **first RVQ layer** to capture linguistic content, while pushing acoustic details (timbre, noise) to subsequent layers.
 > - **Bridge for LLMs:** This design effectively bridges the semantic gap between text and speech, enabling Speech-LLMs to achieve both high-fidelity reconstruction and strong semantic understanding.
 
-
-
-
-
 ### 2.2 [Mimi](https://arxiv.org/abs/2410.00037)
 
 There were many works following ST. One of the interesting works is mimi codec. Mimi codec proposes that high-level semantic information is not causal, SpeechTokenizer transfers non-causal information into the tokens produced by a causal model allowing for streaming encoding and decoding. 
@@ -59,15 +55,11 @@ Similar to SpeechTokenizer, Mimi compute a cosine distance between the output of
 
 > **While distillation significantly  improves the phonetic discriminability of the first quantizer, it also affects audio quality negatively.**
 
-
-
     They hypothesized that this is due to distilling semantic information into the first level of a single RVQ: **As higher-order quantizers operate on the residual of the first one, the latter needs to trade audio quality for phonetic discriminability**.
-
-
 
 They experimented on the architecture alabtion. 
 
-![](/Users/jaykeecao/Documents/code/SpeeFeaRe/assets/pics/mimi-conflicts.png)
+![](../assets/pics/mimi-conflicts.png)
 
 This table shows that:
 
@@ -77,11 +69,9 @@ This table shows that:
 
 * w/o split quantizer, results in ABX (phonetic) performance improving ($8.1\% \to 6.5 \%$), but audio quality degrading ($\text{VisQOL}:2.82\%\to 2.22\%$)
 
-
-
 So, split the first quantizer for distillation does work. The following figure shows the architecture.
 
-![](/Users/jaykeecao/Documents/code/SpeeFeaRe/assets/pics/mimi-architecture.png)
+![](../assets/pics/mimi-architecture.png)
 
 #### Core Code Implementation
 
@@ -110,7 +100,7 @@ class SplitResidualVectorQuantizer(BaseQuantizer):
             q_dropout=q_dropout,
             **kwargs,
         )
-    
+
     def _renorm_and_add(
             self,
             first_val: torch.Tensor,
@@ -121,7 +111,7 @@ class SplitResidualVectorQuantizer(BaseQuantizer):
         """ Renormalize the first and rest values and add them together """
         n_q = n_q_acoustic + n_q_semantic
         return (first_val * n_q_semantic + rest_val * n_q_acoustic) / n_q
-    
+
     def forward(self, x: torch.Tensor, frame_rate: int) -> QuantizedResult:
         res_first = self.rvq_first(x, frame_rate)
         if self.n_q_semantic == self.n_q:
@@ -145,15 +135,15 @@ class SplitResidualVectorQuantizer(BaseQuantizer):
             commitment_loss=full_commitment_loss,
             metrics={**res_first.metrics, **res_rest.metrics},
         )
-    
+
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         codes = self.rvq_first.encode(x)
         if self.n_q_semantic < self.n_q:
             codes_rest = self.rvq_rest.encode(x)
             codes = torch.cat([codes, codes_rest], dim=-1)
-        
+
         return codes
-    
+
     def decode(self, x: torch.Tensor) -> torch.Tensor:
         z_first = self.rvq_first.decode(x[..., :self.n_q_semantic])
         if self.n_q_semantic < self.n_q:
@@ -169,8 +159,6 @@ class SplitResidualVectorQuantizer(BaseQuantizer):
 * Consists of semantic quantizer and acoustic quantizer
 
 * semantic quantizer disentangled from acoustic quantizer
-
-
 
 #### 2.3 Xcodec
 
@@ -194,8 +182,6 @@ Xcodec also fuses semantic information into the codebooks. The architecture of X
   
   * **Why did not direcly adopt text tokenizer ?**
 
-
-
 **In fact, Xcodec is also distillation-based method for semantic fusion.**
 
 The brief information flow diagram may explain this:
@@ -208,12 +194,102 @@ The brief information flow diagram may explain this:
 
 **I think there is no enssential difference between them.**
 
+### 2.4 WavTokenizer
 
+> WavTokenizer holds the opinion that the semantic information should be captured by model itself.
 
+#### Abstract
 
+The core contribution of WaveTokenizer:
 
+* **Extreme Compression**
+  
+  * one-second 24kHz audio requires only 40-75 tokens
 
+* **SOTA reconstruction quality and richer semantic information**
+  
+  * broader VQ space, extending contextual windows, improving attention networks, powerful multi-scale discriminators and inverse Flourier transformation structure
 
+* Conduct extensive reconstruction experiments in the audio, speech, and music
 
+#### 1. Introduction
 
+This work mainly argues that beyond the current acoustic codec models, two important directions are worth exploring
 
+* high bitrate compression
+  
+  * Single quantizer is convenient and cheap for LLM modeling
+
+* semantic richness
+  
+  * There remains **a gap between codec's reconstruction paradigm and generative paradigm** of downstream models.
+
+**Contribution**
+
+WaveTokenizer,  a discrete acoustic codec model capable of reconstructing 24kHz speech, music, and audio using only 40 or 75 tokens per second.
+
+* Conceptual Contribution ?
+  
+  * compressing the quantizer layers of acoustic codec models to a single quantizer for the first time and enhancing semantic information of the codec without disrupting the codec paradigm for modeling music and audio.
+
+* Methodological Contribution ?
+  
+  * K-means initialization, random dropout.
+  
+  * extended contextual modeling windows and add attention mechanisms in the decoder
+  
+  * inverse Fourier transform module and multi-scale discriminator
+
+* Experimental Contribution ?
+
+> Actually, some researchers raised question about the high rates of the reviewer...
+
+#### 2. Findings and Insights
+
+**Insight-1: Concentration of the speech vocabulary to the left $2^{12}$**
+
+![](./pics/wavetokenizer-codebook.png)
+
+**Insight-2: decoder plays a more crucial role than the encoder during the acoustic codec reconstruction process.**
+
+> Vocos successfully solved the problem of poor phase reconstruction in the frequency domain generation model by **using the ConvNeXt backbone network to process features at low resolution, directly predicting the complex coefficients of the STFT**, and finally using iSTFT for waveform synthesis. This resulted in a neural vocoder that is an order of magnitude faster than HiFi-GAN and has comparable sound quality.
+
+**Core Code Implementation**
+
+```python
+def forward(self, z_q):
+        """
+        Args:
+            z_q: [B, C, T_frame]
+        Returns:
+            audio: [B, 1, T_audio]
+        """
+        x = self.conv_in(z_q)   # B, dim, T_frame
+
+        x = self.attention(x)   # B, dim, T_frame
+
+        for blk in self.backbone:
+            x = blk(x)          # B, dim, T_frame
+
+        x = x.permute(0, 2, 1)  # B, T_frame, dim
+        x = self.norm(x)
+        x = x.permute(0, 2, 1)  # B, dim, T_frame
+
+        spec = self.out_proj(x) # B, out_dim, T_frame
+
+        audio = self.istft_synthesis(spec)
+
+        return audio
+```
+
+#### 3. Experiment Results
+
+> The whole architecure is the combination of DAC encoder and the Vocos backbone.
+
+##### Acoustic Performance
+
+![](../assets/pics/wav-acoustic.png)
+
+##### Semantic Performance
+
+![](../assets/pics/wav-semantic.png)
