@@ -4,13 +4,11 @@
 
 <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
 
-English | 中文
-
 ---
 
 <a name="english"></a>
 
-## 🇬🇧 English Version
+## :pencil:
 
 **SpeeFeaRe** (Speech Feature Representation) is a repository dedicated to tracking, analyzing, and reproducing cutting-edge methods in speech representation learning.
 
@@ -20,10 +18,6 @@ This repository aims to map the evolutionary trajectory from Neural Audio Codecs
 SpeeFeaRe
 ├── 
 ```
-
-
-
-
 
 ### 📖 Motivation
 
@@ -35,7 +29,7 @@ Current speech representation research is undergoing a paradigm shift from "high
 
 We categorize the development of speech representations into the following key stages:
 
-#### 1. The Rise of Discrete Representations: Reconstruction & Compression
+#### 1. The Rise of Discrete Representations: Reconstruction & Compression:white_check_mark:
 
 Early Neural Audio Codecs aimed to discretize continuous audio into tokens for autoregressive modeling by LLMs.
 
@@ -45,7 +39,7 @@ Early Neural Audio Codecs aimed to discretize continuous audio into tokens for a
   - **EnCodec**: Introduced Transformers and streaming processing, further improving compression rates and quality.
   - **DAC**: Fully convolution-based encoder-quantizer-decoder architecture, GAN training paradigm with improved tricks, including L2 normalize, factorized codes and diverse discriminators.
 
-#### 2. Semantic Enhancement: Distillation & Disentanglement
+#### 2. Semantic Enhancement: Distillation & Disentanglement:white_check_mark:
 
 Purely acoustic reconstruction tokens lack semantic information, leading to content inaccuracies in LLM speech generation. Researchers began injecting semantic information from Self-Supervised Learning (SSL) models (e.g., HuBERT/W2V-BERT) into codecs.
 
@@ -60,11 +54,19 @@ Purely acoustic reconstruction tokens lack semantic information, leading to cont
 
 While discretization (Quantization) fits the Cross-Entropy Loss of LLMs, it inevitably leads to **information loss** (especially in prosody and emotion). Consequently, continuous features are regaining attention.
 
-> **💡 Deep Dive: Challenges of Continuous Feature Modeling in AR** Continuous features (like Mel-spectrograms or Latent vectors) are typically used in Non-AR or Diffusion (DiT) architectures. Modeling them directly in Autoregressive (AR) architectures faces significant challenges:
-> 
-> 1. **Error Accumulation**: In AR generation, $x_t$ depends on $x_{t-1}$. Discrete tokens can "reset" errors via codebook lookup, whereas minute prediction errors in continuous features amplify exponentially over sequence length, leading to generation collapse.
-> 2. **Variance Collapse / Over-smoothing**: Traditional regression losses (like MSE) tend to predict the mean of the distribution. Due to the high variance of speech data, models tend to output "averaged," smooth trajectories, resulting in muffled speech lacking detail and high-frequency information.
-> 3. **Difficulty in Density Estimation**: The discrete space is finite (Softmax), while the continuous space is infinite. Accurately modeling complex multi-modal distributions in an AR framework is notoriously difficult.
+**💡 Deep Dive: Challenges of Continuous Feature Modeling in AR** Continuous features (like Mel-spectrograms or Latent vectors) are typically used in Non-AR or Diffusion (DiT) architectures. Modeling them directly in Autoregressive (AR) architectures faces significant challenges:
+
+**Error Accumulation**: In AR generation, $x_t$ depends on $x_{t-1}$. Discrete tokens can "reset" errors via codebook lookup, whereas minute prediction errors in continuous features amplify exponentially over sequence length, leading to generation collapse.
+
+**Variance Collapse / Over-smoothing**: Traditional regression losses (like MSE) tend to predict the mean of the distribution. Due to the high variance of speech data, models tend to output "averaged," smooth trajectories, resulting in muffled speech lacking detail and high-frequency information.
+
+**Difficulty in Density Estimation**: The discrete space is finite (Softmax), while the continuous space is infinite. Accurately modeling complex multi-modal distributions in an AR framework is notoriously difficult.
+
+:rocket: On going
+
+
+
+
 
 #### 4. Next-Gen Frontiers: Continuous Autoregressive Modeling
 
@@ -75,14 +77,29 @@ To combine the contextual capabilities of AR with the high fidelity of continuou
   - **DiTAR**: Diffusion for Autoregressive generation.
   - **CosyVoice**: Combining the strengths of discrete and continuous representations for high-quality zero-shot generation.
 
+:rocket:On going
+
 ### 📚 Paper List & Analysis
 
 *(Note: Links point to detailed analysis documents within the repo)*
 
-| Category            | Paper               | Key Idea                                 | Code/Analysis                    |
-| ------------------- | ------------------- | ---------------------------------------- | -------------------------------- |
-| **Pioneer**         | **SoundStream**     | End-to-end neural audio codec with RVQ   | [Analysis](./assets/pioneer.md)  |
-| **Pioneer**         | **EnCodec**         | High fidelity neural audio compression   |                                  |
-| **Semantic Fusion** | **SpeechTokenizer** | Unified speech tokenizer for speech LLMs | [Analysis](./assets/semantic.md) |
-| **Semantic Fusion** | **Mimi**            | Split RVQ with Semantic Distillation     |                                  |
-| **Semantic Fusion** | **Xcodec**          | Large-scale semantic distillation        |                                  |
+| Category                   | Paper               | Key Idea                                                             | Code/Analysis                    |
+| -------------------------- | ------------------- | -------------------------------------------------------------------- | -------------------------------- |
+| **Pioneer**                | **SoundStream**     | End-to-end neural audio codec with RVQ                               | [Analysis](./assets/pioneer.md)  |
+| **Pioneer**                | **EnCodec**         | High fidelity neural audio compression                               |                                  |
+| **Semantic Fusion**        | **SpeechTokenizer** | Unified speech tokenizer for speech LLMs                             | [Analysis](./assets/semantic.md) |
+| **Semantic Fusion**        | **Mimi**            | Split RVQ with Semantic Distillation                                 |                                  |
+| **Semantic Fusion**        | **Xcodec**          | Large-scale semantic distillation                                    |                                  |
+| **Attention for Semantic** | **WavTokenizer**    | Choose 3s training clips and add Attention for self semantic capture |                                  |
+
+### :rocket:Train your own Codec!
+
+
+
+### :rocket:Evaluate Codec
+
+* Popular metrics
+
+* Popular evaluation set
+
+* Evaluation scripts
